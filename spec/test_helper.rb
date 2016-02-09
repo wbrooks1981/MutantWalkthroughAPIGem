@@ -3,6 +3,7 @@ require "mutant_school_api_model"
 require "minitest/reporters"
 require 'minitest/autorun'
 require "factories/mutant_factory"
+require "factories/term_factory"
 
 MiniTest::Reporters.use!
 

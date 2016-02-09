@@ -8,6 +8,8 @@ require "mutant_school_api_model"
 
 # (If you use this, don't forget to add pry to your Gemfile!)
 require "pry"
+
+include MutantSchoolAPIModel
 Pry.start
 
 # require "irb"
