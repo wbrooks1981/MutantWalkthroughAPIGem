@@ -69,4 +69,18 @@ describe MutantSchoolAPIModel::Enrollment do
       _(actual.first).must_be_instance_of Enrollment
     end
   end
+
+  describe '#term' do
+    it 'should be an instance of term' do
+      enrollment = Enrollment.find(1, parent: Mutant.find(1))
+      _(enrollment.term).must_be_instance_of(Term)
+    end
+  end
+
+  describe '#student' do
+    it 'should be a student is an instance of mutant' do
+      enrollment = Enrollment.find(1, parent: Mutant.find(1))
+      _(enrollment.student).must_be_instance_of(Mutant)
+    end
+  end
 end

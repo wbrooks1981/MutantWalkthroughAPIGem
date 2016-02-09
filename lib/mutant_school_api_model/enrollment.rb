@@ -10,5 +10,12 @@ module MutantSchoolAPIModel
       ]
     end
 
+    def self.related_object_mappings
+      {
+          student: Mutant,
+          term: Term
+      }
+    end
+
   end
 end
