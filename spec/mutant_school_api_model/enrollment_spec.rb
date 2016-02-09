@@ -83,4 +83,17 @@ describe MutantSchoolAPIModel::Enrollment do
       _(enrollment.student).must_be_instance_of(Mutant)
     end
   end
+
+  describe '#enrollments' do
+    it 'should retrieve the enrollments of mutant' do
+      # @wolverine_fall2016.save
+      #
+      # actual = Enrollment.find(@wolverine_fall2016.id)
+      # _(actual.to_h).must_equal(@wolverine_fall2016.to_h)
+
+      actual = Mutant.find(1).enrollments
+      _(actual).must_be_instance_of(Array)
+      _(actual.first).must_be_instance_of(Enrollment)
+    end
+  end
 end

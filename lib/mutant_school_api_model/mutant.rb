@@ -17,5 +17,11 @@ module MutantSchoolAPIModel
 
     attr_accessor *(self.attribute_names - self.read_only_attribute_names)
     attr_reader *self.read_only_attribute_names
+
+    def enrollments
+      @enrollments ||= Enrollment.all(parent: self)
+    end
+
+
   end
 end

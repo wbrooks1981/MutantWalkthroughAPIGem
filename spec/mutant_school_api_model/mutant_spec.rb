@@ -32,6 +32,14 @@ describe MutantSchoolAPIModel::Mutant do
   end
 
   describe '#find' do
+    it 'should invoke HTTP.get with the correct URL' do
+      @wolverine.save
+      HTTP.expects(:get)
+          .with(Mutant.url + "/#{@wolverine.id}")
+          .returns(stub(code: 200, to_s: @wolverine.to_h.to_json))
+      Mutant.find(@wolverine.id)
+    end
+
     it 'should retrieve the mutant that was just created' do
       @wolverine.save
 
@@ -62,6 +70,14 @@ describe MutantSchoolAPIModel::Mutant do
 
       # Make sure the first item in the Array is a Mutant.
       _(actual.first).must_be_instance_of Mutant
+    end
+  end
+
+  describe '#enrollments' do
+    it 'should return an Array of Enrollment instances if the mutant has enrollments' do
+      actual = Mutant.find(1).enrollments
+      _(actual).must_be_instance_of Array
+      _(actual.first).must_be_instance_of Enrollment
     end
   end
 end
