@@ -12,6 +12,32 @@ module MutantSchoolAPIModel
       self.base_url + "/#{resource_name}s"
     end
 
+    def self.read_only_attribute_names
+      [
+          :id,
+          :url,
+          :created_at,
+          :updated_at,
+      ]
+    end
+
+    def self.base_attribute_names
+      [
+          :id,
+          :url,
+          :created_at,
+          :updated_at,
+      ]
+    end
+
+    def self.model_specific_attribute_names
+      []
+    end
+
+    def self.attribute_names
+      base_attribute_names + model_specific_attribute_names
+    end
+
     # Retrieve all records of the current resource type
     def self.all
       response = HTTP.get(url)
