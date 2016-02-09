@@ -37,17 +37,16 @@ module MutantSchoolAPIModel
 
     # Retrieve all records of the current resource type
     def self.all(options = {})
-      response = HTTP.get(url(parent: options[:parent]))
+      response = HTTP.get(url(options))
       return false if response.code != 200
-
       JSON.parse(response.to_s).map do |attributes_hash|
         self.new attributes_hash
       end
     end
 
     # Retrieve a single resource, identified by `id`.
-    def self.find(id)
-      response = HTTP.get(self.url + "/#{id}")
+    def self.find(id, options = {})
+      response = HTTP.get(url(options) + "/#{id}")
       return false if response.code != 200
       self.new JSON.parse(response.to_s)
     end
