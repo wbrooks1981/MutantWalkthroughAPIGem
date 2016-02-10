@@ -6,9 +6,7 @@ module MutantSchoolAPIModel
 
     def self.belongs_to(name, options = {})
       class_name = options[:class_name] || name.to_s.capitalize
-      var_name   = "@#{name}"
-      @relations ||= {}
-      @relations[name] = class_name
+      relations[name] = class_name
     end
 
     def self.relations
@@ -63,7 +61,7 @@ module MutantSchoolAPIModel
     end
 
     def self.attribute_names
-      base_attribute_names + model_specific_attribute_names
+      base_attribute_names + model_specific_attribute_names + relations.keys
     end
 
     def self.read_only_attribute_names
