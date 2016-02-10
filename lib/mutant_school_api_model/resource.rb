@@ -71,25 +71,28 @@ module MutantSchoolAPIModel
 
     # Retrieve all records of the current resource type
     def self.all(options = {})
-      response = HTTP.get(url(options))
-      return false if response.code != 200
+      @response = HTTP.get(url(options))
+      return false if @response.code != 200
 
-      JSON.parse(response.to_s).map do |attributes_hash|
+      JSON.parse(@response.to_s).map do |attributes_hash|
         self.new attributes_hash
       end
     end
     # Retrieve a single resource, identified by `id`.
     def self.find(id, options = {})
-      response = HTTP.get(url(options) + "/#{id}")
-      return false if response.code != 200
-      self.new JSON.parse(response.to_s)
+      @response = HTTP.get(url(options) + "/#{id}")
+      return false if @response.code != 200
+      self.new JSON.parse(@response.to_s)
     end
+
+    attr_reader :errors
 
     def initialize(attr = {})
       create_attribute_accessors
       @url = self.class.url
       # set instance variables from the things in the hash
       update_attributes(attr)
+      @errors = []
     end
 
     def create_attribute_accessors
@@ -124,16 +127,20 @@ module MutantSchoolAPIModel
     end
 
     def save
+      @errors = []
       if persisted?
         # Update
-        response = HTTP.put(url, json: payload)
-        return false if response.code != 200
+        @response = HTTP.put(url, json: payload)
       else
         # Create
-        response = HTTP.post(url, json: payload)
-        return false if response.code != 201
+        @response = HTTP.post(url, json: payload)
       end
-      update_attributes JSON.parse(response.to_s)
+      reload
+    end
+
+    def reload
+      add_errors and return false unless [200, 201].include?(@response.code)
+      update_attributes(JSON.parse(@response.to_s))
     end
 
     def to_h
@@ -145,9 +152,10 @@ module MutantSchoolAPIModel
     end
 
     def destroy
+      @errors = []
       return false unless persisted?
-      response = HTTP.delete(url)
-      return false if response.code != 204
+      @response = HTTP.delete(url)
+      add_errors and return false if @response.code != 204
       @id = nil
       @url = self.class.url
       true
@@ -158,6 +166,10 @@ module MutantSchoolAPIModel
     end
 
     private
+
+    def add_errors
+      @errors << { @response.code => JSON.parse(@response.to_s)}
+    end
 
     def payload
       permitted_attributes = to_h
