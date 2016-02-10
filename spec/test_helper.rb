@@ -9,6 +9,7 @@ require "factories/term_factory"
 MiniTest::Reporters.use!
 
 include MutantSchoolAPIModel
+include MutantSchoolAPIModel::Factories
 
 
 # def with_phoney_response(&block)
