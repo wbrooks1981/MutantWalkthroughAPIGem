@@ -64,4 +64,12 @@ describe MutantSchoolAPIModel::Term do
       _(actual.first).must_be_instance_of Term
     end
   end
+
+  describe '#enrollments' do
+    it 'should return an Array of Enrollment instances if the term has enrollments' do
+      actual = Term.find(2).enrollments
+      _(actual).must_be_instance_of Array
+      _(actual.first).must_be_instance_of Enrollment
+    end
+  end
 end

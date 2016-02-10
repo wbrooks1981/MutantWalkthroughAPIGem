@@ -1,6 +1,8 @@
 module MutantSchoolAPIModel
   class Mutant < Resource
 
+    has_many :enrollments
+
     def self.model_specific_attribute_names
       [:mutant_name,
        :real_name,
@@ -17,11 +19,6 @@ module MutantSchoolAPIModel
 
     attr_accessor *(self.attribute_names - self.read_only_attribute_names)
     attr_reader *self.read_only_attribute_names
-
-    def enrollments
-      @enrollments ||= Enrollment.all(parent: self)
-    end
-
 
   end
 end

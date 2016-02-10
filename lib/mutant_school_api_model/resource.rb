@@ -4,6 +4,23 @@ module MutantSchoolAPIModel
       self.name.split('::').last.downcase
     end
 
+    # 'has_many :enrollments' would generate the following method:
+    # def enrollments
+    #   @enrollments ||= Enrollment.all(parent: self)
+    # end
+    def self.has_many(name)
+      class_name = name.to_s.capitalize.chomp('s')
+      var_name = "@#{name}"
+      define_method(name) do
+        klass = Object::const_get(class_name)
+        if instance_variable_defined?(var_name)
+          instance_variable_get(var_name)
+        else
+          instance_variable_set(var_name, klass.all(parent: self))
+        end
+      end
+    end
+
     def self.base_url
       'https://mutant-school.herokuapp.com/api/v1'
     end
