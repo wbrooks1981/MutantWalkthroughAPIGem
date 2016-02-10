@@ -1,28 +1,52 @@
 module MutantSchoolAPIModel
   class Resource
+
+    def self.base_url
+      'https://mutant-school.herokuapp.com/api/v1'
+    end
+    def self.url(options = {})
+      parent = options[:parent]
+      base = (parent && parent.url) || base_url
+      "#{base}/#{resource_name}s"
+    end
     def self.resource_name
       self.name.split('::').last.downcase
     end
-
-    def self.belongs_to(name, options = {})
-      class_name = options[:class_name] || name.to_s.capitalize
-      relations[name] = class_name
+    def self.base_attribute_names
+      [
+          :id,
+          :url,
+          :created_at,
+          :updated_at
+      ]
     end
-
+    def self.model_attribute_names
+      @model_attributes_names ||= []
+    end
+    def self.model_read_attribute_names
+      @model_read_attribute_names ||= []
+    end
+    def self.attribute_names(*names)
+      @model_attributes_names = @model_attributes_names ? (@model_attributes_names + names) : names
+      @model_attributes_names + read_only_attribute_names
+    end
+    def self.read_only_attribute_names(*names)
+      @read_only_attribute_names = @read_only_attribute_names ? (@read_only_attribute_names + names) : base_attribute_names
+    end
     def self.relations
       @relations ||= {}
     end
-
-    # 'has_many :enrollments' would generate the following method:
+    # `has_many :enrollments` would generate a method
+    # equilvalent to the following:
     # def enrollments
     #   @enrollments ||= Enrollment.all(parent: self)
     # end
     def self.has_many(name)
       class_name = name.to_s.capitalize.chomp('s')
       var_name = "@#{name}"
-      define_method(name) do
+      define_method name do
         klass = Object::const_get(class_name)
-        if instance_variable_defined?(var_name)
+        if instance_variable_defined? var_name
           instance_variable_get(var_name)
         else
           instance_variable_set(var_name, klass.all(parent: self))
@@ -32,40 +56,17 @@ module MutantSchoolAPIModel
       define_method "#{name}=" do |value|
         if value.is_a?(Array)
           instance_variable_set(var_name, value)
+        else
+          raise TypeError, "#{name} must be an Array."
         end
-          raise TypeError("#{name} must be an Array")
       end
     end
+    def self.belongs_to(name, options={})
+      class_name = options[:class_name] || name.to_s.capitalize
+      var_name = "@#{name}"
 
-    def self.base_url
-      'https://mutant-school.herokuapp.com/api/v1'
-    end
-
-    def self.url(options = {})
-      parent = options[:parent]
-      base = (parent && parent.url) || base_url
-      "#{base}/#{resource_name}s"
-    end
-
-    def self.base_attribute_names
-      [
-          :id,
-          :url,
-          :created_at,
-          :updated_at
-      ]
-    end
-
-    def self.model_specific_attribute_names
-      []
-    end
-
-    def self.attribute_names
-      base_attribute_names + model_specific_attribute_names + relations.keys
-    end
-
-    def self.read_only_attribute_names
-      base_attribute_names
+      relations[name] = class_name
+      attr_reader name
     end
 
     # Retrieve all records of the current resource type
@@ -77,7 +78,6 @@ module MutantSchoolAPIModel
         self.new attributes_hash
       end
     end
-
     # Retrieve a single resource, identified by `id`.
     def self.find(id, options = {})
       response = HTTP.get(url(options) + "/#{id}")
@@ -99,7 +99,7 @@ module MutantSchoolAPIModel
 
     def update_attributes(attr={})
       attr.each do |name, value|
-        value = instantiate_if_related_object(name, value)
+        instantiate_if_related_object(name, value)
         if self.class.attribute_names.include? name.to_sym
           instance_variable_set("@#{name}", value)
         end
@@ -115,8 +115,8 @@ module MutantSchoolAPIModel
       if self.class.relations.keys.include? name.to_sym
         klass = Object::const_get(self.class.relations[name.to_sym])
         value = klass.new(value)
+        instance_variable_set("@#{name}", value)
       end
-      value
     end
 
     def update_url
@@ -173,3 +173,5 @@ module MutantSchoolAPIModel
     end
   end
 end
+
+
